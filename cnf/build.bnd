@@ -1,14 +1,12 @@
 javac.source: 1.8
 javac.target: 1.8
 
--include: cnf/gradle/base.bnd
-
 Bundle-Category: PowerMatcher
 qualifier: SNAPSHOT-${tstamp}
 -includeresource: {OSGI-INF/permissions.perm=permissions.perm}
 
--baseline: *
--baselinerepo: PowerMatcher Current Release
+-baseline: Release
+-baselinerepo: Release
 
 pm-buildpath: ${default-buildpath}, net.powermatcher.api;version=latest
 
