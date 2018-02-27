@@ -1,5 +1,3 @@
--pluginpath: ${workspace}/cnf/gradle/bnd/biz.aQute.repository.jar
-
 -plugin: \
      aQute.bnd.deployer.repository.LocalIndexedRepo;\
             name=Release;\
@@ -24,6 +22,14 @@
      aQute.bnd.deployer.repository.FixedIndexedRepo;\
             name=PowerMatcher Current Release;\
             locations=https://github.com/flexiblepower/powermatcher/releases/download/v2.1/index.xml;\
-            cache=${workspace}/cnf/cache
+            cache=${workspace}/cnf/cache,\
+     aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		    releaseUrl=https://repo.maven.apache.org/maven2/; \
+		    index=${.}/run.maven; \
+            name="FAN Bundle Hub - Run (Maven Repository)",\
+     aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		    releaseUrl=https://repo.maven.apache.org/maven2/; \
+		    index=${.}/test.maven; \
+            name="FAN Bundle Hub - Test (Maven Repository)"
 
 -releaserepo: Release

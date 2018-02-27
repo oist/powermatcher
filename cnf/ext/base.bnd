@@ -1,0 +1,27 @@
+Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
+Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
+
+default-buildpath: \
+	flexiblepower.api;version=latest,\
+	biz.aQute.bnd.annotation;version=3.5,\
+	osgi.core;version="[4.3.1,5.0)",\
+	osgi.cmpn;version="[4.3.1,5.0)",\
+	slf4j.api;version="[1.7,2.0)"
+
+fpai-buildpath: \
+	${default-buildpath},\
+	flexiblepower.ral;version=latest,\
+	flexiblepower.ral.ext;version=latest,\
+	flexiblepower.ral.efi;version=latest
+
+test-buildpath: \
+	junit.osgi;version=latest,\
+	org.hamcrest.core;version=latest,\
+	org.mockito.mockito-all;version=latest,\
+	junit
+	
+Bundle-Vendor: Flexiblepower Alliance Network (FAN)
+Include-Resource: res, ../cnf/LICENSE.txt
+Bundle-Copyright: Copyright Flexiblepower Alliance Network (FAN) 2013
+Bundle-License: Apache License, Version 2.0
+

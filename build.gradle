@@ -1,15 +1,53 @@
-apply from: rootProject.file("${bnd_cnf}/gradle/master.gradle")
+subprojects {
+  if (plugins.hasPlugin('biz.aQute.bnd')) {
+
+    repositories {
+      jcenter()
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+    jacoco {
+      toolVersion = '0.7.9'
+      reportsDir = file("$buildDir/jacoco")
+    }
+
+    jacocoTestReport {
+      additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+      reports {
+        xml.enabled true
+        csv.enabled false
+        html.destination "${buildDir}/jacoco/html"
+      }
+    }
+
+    apply plugin: 'checkstyle'
+    checkstyle {
+      configFile = file("${cnf.projectDir}/checkstyle/configuration.xml")
+      ignoreFailures = true
+      showViolations = false
+      configProperties.put("samedir", "${cnf.projectDir}/checkstyle")
+    }
+
+    task cleanGenerated(type: Delete) {
+      delete 'generated'
+    }
+  }
+}
+
+task wrapper(type: Wrapper) {
+  jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+}
 
 // Reconfigure the Javadoc classes
-generateJavadoc.source = fileTree('.') {
-                             include 'net.powermatcher.api/**/*.java'
-                             include 'net.powermatcher.core/**/*.java'
-                             include 'net.powermatcher.peakshaving/**/*.java'
-                             exclude '*.test/*'
-                             exclude '**/*Test.java'
-                         }
-generateJavadoc.enabled = true
-
+//generateJavadoc.source = fileTree('.') {
+//                             include 'net.powermatcher.api/**/*.java'
+//                             include 'net.powermatcher.core/**/*.java'
+//                             include 'net.powermatcher.peakshaving/**/*.java'
+//                             exclude '*.test/*'
+//                             exclude '**/*Test.java'
+//                         }
+//generateJavadoc.enabled = true
 
 // Generate sonar-runner.properties containing all projects and jars
 task generatesonar << {
