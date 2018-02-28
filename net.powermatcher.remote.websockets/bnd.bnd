@@ -6,6 +6,6 @@
     org.apache.felix.http.jetty;version=latest
 -includeresource: \
 	{OSGI-INF/permissions.perm=permissions.perm},\
-	../cnf/gradle/LICENSE.txt
+	../cnf/LICENSE.txt
     
 -sub: *.bnd
