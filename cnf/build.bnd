@@ -2,7 +2,7 @@ javac.source: 1.8
 javac.target: 1.8
 
 Bundle-Category: PowerMatcher
-qualifier: SNAPSHOT-${tstamp}
+qualifier: repoOIST-SNAPSHOT-${tstamp}
 -includeresource: {OSGI-INF/permissions.perm=permissions.perm}
 
 -baseline: Release
