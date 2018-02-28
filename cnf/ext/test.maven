@@ -1,5 +1,5 @@
 # FAN Bundle Hub - Test
 biz.aQute.bnd:biz.aQute.junit:3.5.0
-#junit:junit:4.11
-#org.hamcrest:hamcrest-core:1.3
-#org.mockito:mockito-all:1.9.5
+junit:junit:4.11
+org.hamcrest:hamcrest-core:1.3
+org.mockito:mockito-all:1.9.5

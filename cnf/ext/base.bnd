@@ -15,10 +15,10 @@ fpai-buildpath: \
 	flexiblepower.ral.efi;version=latest
 
 test-buildpath: \
-	junit.osgi;version=latest,\
-	org.hamcrest.core;version=latest,\
+	biz.aQute.junit:version=latest,\
+	org.hamcrest:hamcrest-core;version=latest,\
 	org.mockito.mockito-all;version=latest,\
-	junit
+	junit:junit
 	
 Bundle-Vendor: Flexiblepower Alliance Network (FAN)
 Include-Resource: res, ../cnf/LICENSE.txt

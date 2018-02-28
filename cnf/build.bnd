@@ -11,7 +11,7 @@ qualifier: SNAPSHOT-${tstamp}
 pm-buildpath: ${default-buildpath}, net.powermatcher.api;version=latest
 
 test: \
-	junit;version=latest,\
-	org.hamcrest.core;version=latest,\
+	junit:junit;version=latest,\
+	org.hamcrest:hamcrest-core;version=latest,\
 	org.mockito.mockito-all;version=latest,\
 	net.powermatcher.test.helpers;version=latest

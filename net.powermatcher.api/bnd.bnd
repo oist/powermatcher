@@ -2,4 +2,4 @@ Bundle-Version: 3.0.0.${tstamp}
 Export-Package:  \
 	net.powermatcher.api*;-noimport:=true
 -buildpath: ${default-buildpath}, flexiblepower.api
--testpath: junit, org.hamcrest.core
+-testpath: junit:junit, org.hamcrest:hamcrest-core

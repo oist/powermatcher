@@ -1,0 +1,10 @@
+# FAN Bundle Hub - Build
+org.osgi:osgi.cmpn:4.3.1
+org.osgi:osgi.cmpn:5.0.0
+org.osgi:osgi.cmpn:6.0.0
+org.osgi:osgi.core:4.3.1
+org.osgi:osgi.core:5.0.0
+org.osgi:osgi.core:6.0.0
+org.osgi:osgi.enterprise:5.0.0
+org.osgi:osgi.enterprise:6.0.0
+org.osgi:osgi.residential:6.0.0
