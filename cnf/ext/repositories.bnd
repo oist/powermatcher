@@ -15,17 +15,30 @@
 		local=${workspace}/../fpai-core/cnf/release/;\
         pretty=true
 
--plugin.11.Build: \
+ -plugin.21.Github: \
+    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+		locations=https://raw.githubusercontent.com/oist/flexiblepower-base/repo-oist/cnf/release/index.xml; \
+        name="Flexiblepower Base (Github Repository)"; \
+        cache=${workspace}/cnf/cache; \
+        readonly=true
+ -plugin.22.Github: \
+    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+		locations=https://raw.githubusercontent.com/oist/fpai-core/repo-oist/cnf/release/index.xml; \
+		name="FPAI Core Current Release (Github Repository)";\
+        cache=${workspace}/cnf/cache; \
+        readonly=true
+
+-plugin.31.Build: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/build.maven; \
         name="FAN Bundle Hub - Build (Maven Repository)"
--plugin.12.Run: \
+-plugin.32.Run: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/run.maven; \
         name="FAN Bundle Hub - Run (Maven Repository)"
--plugin.13.Test: \
+-plugin.33.Test: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/test.maven; \
