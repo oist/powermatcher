@@ -10,7 +10,7 @@
 -testpath:
     junit:junit
 
-Bundle-Version: 2.0.0.${tstamp}
+Bundle-Version: 2.0.0.${qualifier}
 Private-Package: net.powermatcher.test.osgi
 Test-Cases:  ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
 
