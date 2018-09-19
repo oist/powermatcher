@@ -3,6 +3,7 @@ package net.powermatcher.visualisation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -156,7 +157,7 @@ public class VisualisationPlugin
                 resp.sendError(404, "Resource \"" + path + "\" not found.");
             } else {
                 LOGGER.debug("Serving file {}", path);
-                IOUtils.copy(input, resp.getWriter());
+                IOUtils.copy(input, resp.getWriter(), Charset.defaultCharset());
             }
         }
     }
