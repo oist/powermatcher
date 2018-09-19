@@ -14,27 +14,27 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.powermatcher.visualisation.models.LevelModel;
-import net.powermatcher.visualisation.models.MenuItemModel;
-import net.powermatcher.visualisation.models.NodeModel;
-import net.powermatcher.visualisation.models.SubMenuItemModel;
-
 import org.apache.commons.io.IOUtils;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+
+import net.powermatcher.visualisation.models.LevelModel;
+import net.powermatcher.visualisation.models.MenuItemModel;
+import net.powermatcher.visualisation.models.NodeModel;
+import net.powermatcher.visualisation.models.SubMenuItemModel;
 
 /**
  * {@link HttpServlet} used by the visualizer frontend.
@@ -42,12 +42,11 @@ import com.google.gson.JsonObject;
  * @author FAN
  * @version 2.1
  */
-@Component(
-           provide = Servlet.class,
-           properties = { "felix.webconsole.title=Powermatcher cluster visualizer",
-                         "felix.webconsole.label=pm-cluster-visualizer" },
-           immediate = true,
-           designateFactory = VisualisationPlugin.Config.class)
+@Component(service = Servlet.class,
+           property = { "felix.webconsole.title=Powermatcher cluster visualizer",
+                        "felix.webconsole.label=pm-cluster-visualizer" },
+           immediate = true)
+@Designate(ocd = VisualisationPlugin.Config.class, factory = true)
 public class VisualisationPlugin
     extends HttpServlet {
     private static final long serialVersionUID = -3582669073153236495L;
@@ -65,14 +64,13 @@ public class VisualisationPlugin
     /**
      * OSGI configuration of the {@link SimpleObserver}
      */
-    public static interface Config {
-        @Meta.AD(
-                 required = true,
-                 deflt = "Auctioneer::net.powermatcher.core.auctioneer.Auctioneer, Concentrator::net.powermatcher.core.concentrator.Concentrator,"
-                         + "DeviceAgent::net.powermatcher.examples.Freezer, DeviceAgent::net.powermatcher.examples.PVPanelAgent",
-                 description = "A list of all the OSGi Menu items that have to be used. It's menu::submenu")
-                List<String>
-                menu();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(required = true,
+                             defaultValue = "Auctioneer::net.powermatcher.core.auctioneer.Auctioneer, Concentrator::net.powermatcher.core.concentrator.Concentrator,"
+                                            + "DeviceAgent::net.powermatcher.examples.Freezer, DeviceAgent::net.powermatcher.examples.PVPanelAgent",
+                             description = "A list of all the OSGi Menu items that have to be used. It's menu::submenu")
+        String[] menu();
     }
 
     /**
@@ -97,9 +95,7 @@ public class VisualisationPlugin
      *            the configuration properties
      */
     @Activate
-    public void activate(Map<String, Object> properties) {
-        Config config = Configurable.createConfigurable(Config.class, properties);
-
+    public void activate(final Config config) {
         menuItems = new HashMap<String, MenuItemModel>();
         fillMenuItems(config.menu());
         LOGGER.info("VisualisationPlugin [{}], activated");
@@ -111,7 +107,7 @@ public class VisualisationPlugin
      * @param input
      *            the List containing String values, separated with ::
      */
-    private void fillMenuItems(List<String> input) {
+    private void fillMenuItems(String[] input) {
         MenuItemModel menuItem;
         SubMenuItemModel subMenuItem;
 

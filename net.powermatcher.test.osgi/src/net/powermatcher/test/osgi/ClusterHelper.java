@@ -5,17 +5,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.TestCase;
-import net.powermatcher.api.data.MarketBasis;
-import net.powermatcher.core.auctioneer.Auctioneer;
-import net.powermatcher.core.concentrator.Concentrator;
-import net.powermatcher.test.helpers.PropertiesBuilder;
-import net.powermatcher.test.helpers.TestingObserver;
-
-import org.apache.felix.scr.Component;
-import org.apache.felix.scr.ScrService;
 import org.junit.Assert;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
@@ -23,7 +16,17 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.runtime.ServiceComponentRuntime;
+import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
+import org.osgi.util.promise.Promise;
 import org.osgi.util.tracker.ServiceTracker;
+
+import junit.framework.TestCase;
+import net.powermatcher.api.data.MarketBasis;
+import net.powermatcher.core.auctioneer.Auctioneer;
+import net.powermatcher.core.concentrator.Concentrator;
+import net.powermatcher.test.helpers.PropertiesBuilder;
+import net.powermatcher.test.helpers.TestingObserver;
 
 /**
  * Helper class which contains basic functionality used in most tests.
@@ -51,8 +54,8 @@ public class ClusterHelper
 
     private final BundleContext context;
 
-    private final ServiceTracker<ScrService, ScrService> scrServiceTracker;
-    private final ScrService scrService;
+    private final ServiceTracker<ServiceComponentRuntime, ServiceComponentRuntime> serviceRuntimeTracker;
+    private final ServiceComponentRuntime serviceRuntime;
 
     private final ServiceTracker<ConfigurationAdmin, ConfigurationAdmin> adminServiceTracker;
     private final ConfigurationAdmin admin;
@@ -64,10 +67,10 @@ public class ClusterHelper
         this.context = context;
         context.addServiceListener(this);
 
-        scrServiceTracker = new ServiceTracker<ScrService, ScrService>(context, ScrService.class, null);
-        scrServiceTracker.open();
-        scrService = scrServiceTracker.waitForService(MAX_TIMEOUT);
-        Assert.assertNotNull(scrService);
+        serviceRuntimeTracker = new ServiceTracker<>(context, ServiceComponentRuntime.class, null);
+        serviceRuntimeTracker.open();
+        serviceRuntime = serviceRuntimeTracker.waitForService(MAX_TIMEOUT);
+        Assert.assertNotNull(serviceRuntime);
 
         adminServiceTracker = new ServiceTracker<ConfigurationAdmin, ConfigurationAdmin>(context,
                                                                                          ConfigurationAdmin.class,
@@ -96,7 +99,7 @@ public class ClusterHelper
             it.remove();
         }
         adminServiceTracker.close();
-        scrServiceTracker.close();
+        serviceRuntimeTracker.close();
 
         try {
             Thread.sleep(500); // Give everything time to shut down correctly
@@ -197,31 +200,75 @@ public class ClusterHelper
         return createConfiguration(FACTORY_PID_OBSERVER, getStoringObserverProperties());
     }
 
-    public synchronized Component getComponent(final String pid) throws InterruptedException {
+    public Promise<?> disableComponent(final ComponentDescriptionDTO description) {
+        return serviceRuntime.disableComponent(description);
+    }
+
+    public Promise<?> enableComponent(final ComponentDescriptionDTO description) {
+        return serviceRuntime.enableComponent(description);
+    }
+
+    public boolean isComponentEnabled(final ComponentDescriptionDTO description) {
+        return serviceRuntime.isComponentEnabled(description);
+    }
+
+    public synchronized ComponentDescriptionDTO getComponentDescriptionDTOByPid(final String pid) {
         long deadline = System.currentTimeMillis() + MAX_TIMEOUT;
         while (System.currentTimeMillis() < deadline) {
-            Component[] components = scrService.getComponents();
-            for (Component comp : components) {
-                Object componentPid = comp.getProperties().get(Constants.SERVICE_PID);
-                if (pid.equals(componentPid)) {
-                    return comp;
+            for (Bundle bundle : context.getBundles()) {
+                ServiceReference<?>[] refs = bundle.getRegisteredServices();
+                if (refs == null) {
+                    continue;
+                }
+
+                for (ServiceReference<?> ref : refs) {
+                    String servicePid = (String) ref.getProperty(Constants.SERVICE_PID);
+                    if (pid.equals(servicePid)) {
+                        String componentName = (String) ref.getProperty("component.name");
+                        return serviceRuntime.getComponentDescriptionDTO(ref.getBundle(),
+                                                                         componentName);
+                    }
                 }
             }
-            wait(100);
+            System.out.println("---------------");
+            try {
+                wait(100);
+            } catch (InterruptedException ex) {
+                throw new AssertionError("interrupted exception has occurred.", ex);
+            }
         }
 
         throw new AssertionError("Could not find a component for pid " + pid);
     }
 
-    public synchronized void waitForComponentToBecomeActive(final String pid) throws InterruptedException {
-        Component component = getComponent(pid);
-
+    public synchronized void waitForComponentToBecomeActive(final ComponentDescriptionDTO description) {
         long deadline = System.currentTimeMillis() + MAX_TIMEOUT;
         while (System.currentTimeMillis() < deadline) {
-            if (component.getState() == Component.STATE_ACTIVE) {
+            if (isComponentEnabled(description)) {
                 return;
             }
-            wait(100);
+            try {
+                wait(100);
+            } catch (InterruptedException ex) {
+                throw new AssertionError("interrupted exception has occurred.", ex);
+            }
+        }
+        throw new AssertionError("Component name " + description.name + " never became active");
+
+    }
+
+    public synchronized void waitForComponentToBecomeActive(final String pid) throws BundleException {
+        long deadline = System.currentTimeMillis() + MAX_TIMEOUT;
+        while (System.currentTimeMillis() < deadline) {
+            ComponentDescriptionDTO description = getComponentDescriptionDTOByPid(pid);
+            if (isComponentEnabled(description)) {
+                return;
+            }
+            try {
+                wait(100);
+            } catch (InterruptedException ex) {
+                throw new AssertionError("interrupted exception has occurred.", ex);
+            }
         }
         throw new AssertionError("Component for pid " + pid + " never became active");
     }

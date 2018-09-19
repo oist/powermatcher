@@ -2,7 +2,6 @@
 -testpath: ${test}
 
 Bundle-Version: 3.0.0.${qualifier}
-Service-Component:  *
 Export-Package:  \
 	net.powermatcher.core;-noimport:=true,\
 	net.powermatcher.core.auctioneer;-noimport:=true,\

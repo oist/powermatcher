@@ -3,6 +3,5 @@
 
 Bundle-Version: 2.0.1.${qualifier}
 Private-Package: net.powermatcher.runtime
-Service-Component:  *
 
 Provide-Capability: flexiblepower.context; runtime=powermatcher

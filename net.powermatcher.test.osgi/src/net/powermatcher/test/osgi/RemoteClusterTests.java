@@ -5,6 +5,7 @@ import static net.powermatcher.test.osgi.ClusterHelper.AGENT_ID_FREEZER;
 import static net.powermatcher.test.osgi.ClusterHelper.AGENT_ID_PV_PANEL;
 
 import org.osgi.service.cm.Configuration;
+import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
 
 import net.powermatcher.api.data.Price;
 import net.powermatcher.test.helpers.PropertiesBuilder;
@@ -40,15 +41,16 @@ public class RemoteClusterTests
         LOGGER.info("TEST: testAgentRemoval");
         setupRemoteCluster();
         checkBidsFullCluster();
+        ComponentDescriptionDTO description = clusterHelper.getComponentDescriptionDTOByPid(freezerConfig.getPid());
 
         // disconnect Freezer
         LOGGER.info("Disconnecting the freezer");
-        clusterHelper.getComponent(freezerConfig.getPid()).disable();
+        clusterHelper.disableComponent(description);
         checkBidsClusterNoFreezer();
 
         // Re-add Freezer agent, it should not receive bids from previous freezer
         LOGGER.info("Reconnecting the freezer");
-        clusterHelper.getComponent(freezerConfig.getPid()).enable();
+        clusterHelper.enableComponent(description);
         checkBidsFullCluster();
     }
 
@@ -60,12 +62,13 @@ public class RemoteClusterTests
         setupRemoteCluster();
         checkBidsFullCluster();
 
+        ComponentDescriptionDTO description = clusterHelper.getComponentDescriptionDTOByPid(concentratorConfig.getPid());
         LOGGER.info("Disconnecting the concentrator");
-        clusterHelper.getComponent(concentratorConfig.getPid()).disable();
+        clusterHelper.disableComponent(description);
         checkBidsNoCluster();
 
         LOGGER.info("Reconnecting the concentrator");
-        clusterHelper.getComponent(concentratorConfig.getPid()).enable();
+        clusterHelper.enableComponent(description);
         checkBidsFullCluster();
     }
 

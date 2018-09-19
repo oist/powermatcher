@@ -1,15 +1,18 @@
 package net.powermatcher.examples;
 
-import net.powermatcher.api.monitoring.AgentObserver;
-import net.powermatcher.api.monitoring.ObservableAgent;
-import net.powermatcher.api.monitoring.events.AgentEvent;
-
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Meta;
+import net.powermatcher.api.monitoring.AgentObserver;
+import net.powermatcher.api.monitoring.ObservableAgent;
+import net.powermatcher.api.monitoring.events.AgentEvent;
 
 /**
  * {@link ConsoleObserver} is an example implementation of the {@link BaseObserver} interface. You can add
@@ -18,7 +21,8 @@ import aQute.bnd.annotation.metatype.Meta;
  * @author FAN
  * @version 2.1
  */
-@Component(immediate = true, designate = ConsoleObserver.Config.class)
+@Component(immediate = true)
+@Designate(ocd = ConsoleObserver.Config.class)
 public class ConsoleObserver
     implements AgentObserver {
 
@@ -28,12 +32,12 @@ public class ConsoleObserver
      * This interface describes the configuration of this {@link ConsoleObserver}. It defines the filter for the
      * {@link ObservableAgent}s that are needed.
      */
-    public static interface Config {
-        @Meta.AD(required = false,
-                 deflt = "",
-                 description = "The LDAP filter for the ObservableAgents that we want to monitor. "
-                               + "E.g. '(agentId=auctioneer)'")
-        String observableAgent_filter();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(required = false,
+                             description = "The LDAP filter for the ObservableAgents that we want to monitor. "
+                                           + "E.g. '(agentId=auctioneer)'")
+        String observableAgent_filter() default "";
     }
 
     /**
@@ -44,7 +48,7 @@ public class ConsoleObserver
      * @param observable
      *            The {@link ObservableAgent} that it should be registered on.
      */
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
     public void addObservableAgent(ObservableAgent observable) {
         observable.addObserver(this);
     }

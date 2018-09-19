@@ -8,7 +8,6 @@
 
 Bundle-Version: 2.0.1.${qualifier}
 Private-Package:  net.powermatcher.peakshaving
-Service-Component:  *
 Import-Package:  \
 	javax.servlet*;resolution:=optional,\
 	com.google.gson*;resolution:=optional,\

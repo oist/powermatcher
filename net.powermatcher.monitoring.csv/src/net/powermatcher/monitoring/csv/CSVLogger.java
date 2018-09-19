@@ -7,19 +7,25 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Modified;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+
 import net.powermatcher.api.data.Bid;
 import net.powermatcher.api.data.MarketBasis;
 import net.powermatcher.api.messages.BidUpdate;
@@ -33,7 +39,8 @@ import net.powermatcher.api.monitoring.events.AgentEvent;
  * @author FAN
  * @version 2.1
  */
-@Component(immediate = true, designateFactory = CSVLogger.Config.class)
+@Component(immediate = true)
+@Designate(ocd = CSVLogger.Config.class, factory = true)
 public class CSVLogger
     extends AgentEventLogger {
 
@@ -72,33 +79,33 @@ public class CSVLogger
     /**
      * OSGI configuration of the {@link CSVLogger}
      */
-    public static interface Config {
-        @Meta.AD(required = false,
-                 description = "Filter for specific agentId's. When no filters are supplied, it will log everything.")
-            List<String> filter();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(required = false,
+                             description = "Filter for specific agentId's. When no filters are supplied, it will log everything.")
+        String[] filter();
 
-        @Meta.AD(name = "eventType", description = "The AgentEventType this logger has to log.")
-                       AgentEventType eventType();
+        @AttributeDefinition(name = "eventType", description = "The AgentEventType this logger has to log.")
+        AgentEventType eventType();
 
-        @Meta.AD(deflt = "event_log_::yyyyMMdd::.csv",
-                 description = "The pattern for the file name of the log file. "
-                               + "Dataformat strings are placed between the delimeter '::'")
-               String logFilenamePattern();
+        @AttributeDefinition(description = "The pattern for the file name of the log file. "
+                                           + "Dataformat strings are placed between the delimeter '::'")
+        String logFilenamePattern() default "event_log_::yyyyMMdd::.csv";
 
-        @Meta.AD(deflt = "yyyy-MM-dd HH:mm:ss", description = "The date format for the timestamps in the log.")
-               String dateFormat();
+        @AttributeDefinition(description = "The date format for the timestamps in the log.")
+        String dateFormat() default "yyyy-MM-dd HH:mm:ss";
 
-        @Meta.AD(deflt = ";", description = "The field separator the logger will use.")
-               String separator();
+        @AttributeDefinition(description = "The field separator the logger will use.")
+        String separator() default ";";
 
-        @Meta.AD(required = true, description = "The location of the log files.")
-               String logLocation();
+        @AttributeDefinition(required = true, description = "The location of the log files.")
+        String logLocation();
 
-        @Meta.AD(deflt = "30", description = "Time in seconds between file dumps.")
-             long logUpdateRate();
+        @AttributeDefinition(type = AttributeType.LONG, description = "Time in seconds between file dumps.")
+        long logUpdateRate() default 30L;
 
-        @Meta.AD(deflt = "csvLogger")
-               String loggerId();
+        @AttributeDefinition
+        String loggerId() default "csvLogger";
     }
 
     /**
@@ -153,7 +160,7 @@ public class CSVLogger
      * {@inheritDoc}
      */
     @Override
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
     public void addObservable(ObservableAgent observable, Map<String, Object> properties) {
         super.addObservable(observable, properties);
     }
@@ -162,10 +169,16 @@ public class CSVLogger
      * {@inheritDoc}
      */
     @Override
-    protected void processConfig(Map<String, Object> properties) {
-        Config config = Configurable.createConfigurable(Config.class, properties);
+    public void removeObservable(ObservableAgent observable, Map<String, Object> properties) {
+        super.removeObservable(observable, properties);
+    }
 
-        filter = config.filter();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void processConfig(Map<String, Object> properties) {
+        filter = Arrays.asList((String[]) properties.get("filter"));
 
         // ConfigAdmin will sometimes generate a filter with 1 empty element.
         // Ignore it.
@@ -173,13 +186,16 @@ public class CSVLogger
             filter = new ArrayList<String>();
         }
 
-        setEventType(config.eventType());
-        setLogUpdateRate(config.logUpdateRate());
-        setLoggerId(config.loggerId());
-        setDateFormat(new SimpleDateFormat(config.dateFormat()));
-        separator = config.separator();
+        setEventType((AgentEventType) properties.get("eventType"));
+        setLogUpdateRate((Long) properties.get("logUpdateRate"));
+        setLoggerId((String) properties.get("loggerId"));
+        setDateFormat(new SimpleDateFormat((String) properties.get("dateFormat")));
+        separator = (String) properties.get("separator");
 
-        logFile = createLogFile(config.logFilenamePattern(), config.logLocation());
+        String logFilenamePattern = (String) properties.get("logFilenamePattern");
+        String logLocation = (String) properties.get("logLocation");
+
+        logFile = createLogFile(logFilenamePattern, logLocation);
         if (!logFile.exists()) {
             String[] header = null;
 

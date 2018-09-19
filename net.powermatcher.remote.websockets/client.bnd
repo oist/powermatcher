@@ -3,4 +3,3 @@ Private-Package: \
 	net.powermatcher.remote.websockets.client,\
 	net.powermatcher.remote.websockets.data,\
 	net.powermatcher.remote.websockets.json
-Service-Component: *

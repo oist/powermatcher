@@ -3,10 +3,12 @@ package net.powermatcher.test.osgi;
 import static net.powermatcher.test.osgi.ClusterHelper.AGENT_ID_CONCENTRATOR;
 import static net.powermatcher.test.osgi.ClusterHelper.AGENT_ID_FREEZER;
 import static net.powermatcher.test.osgi.ClusterHelper.AGENT_ID_PV_PANEL;
-import net.powermatcher.api.data.Price;
-import net.powermatcher.test.helpers.TestingObserver;
 
 import org.osgi.service.cm.Configuration;
+import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
+
+import net.powermatcher.api.data.Price;
+import net.powermatcher.test.helpers.TestingObserver;
 
 /**
  * Basic cluster tests and tests buildup and agent removal.
@@ -39,12 +41,14 @@ public class BasicClusterTests
         setupCluster();
         checkBidsFullCluster();
 
+        ComponentDescriptionDTO freezerDesc = clusterHelper.getComponentDescriptionDTOByPid(freezerConfig.getPid());
         // disconnect Freezer
-        clusterHelper.getComponent(freezerConfig.getPid()).disable();
+        clusterHelper.disableComponent(freezerDesc);
         checkBidsClusterNoFreezer();
 
         // Re-add Freezer agent, it should not receive bids from previous freezer
-        clusterHelper.getComponent(freezerConfig.getPid()).enable();
+        clusterHelper.enableComponent(freezerDesc);
+        clusterHelper.waitForComponentToBecomeActive(freezerDesc);
         checkBidsFullCluster();
     }
 
@@ -56,12 +60,16 @@ public class BasicClusterTests
         setupCluster();
         checkBidsFullCluster();
 
+        ComponentDescriptionDTO auctioneerDesc =
+                                               clusterHelper.getComponentDescriptionDTOByPid(auctioneerConfig.getPid());
+
         // disconnect Auctioneer
-        clusterHelper.getComponent(auctioneerConfig.getPid()).disable();
+        clusterHelper.disableComponent(auctioneerDesc);
         checkBidsNoCluster();
 
         // connect auctioneer, bid should start again
-        clusterHelper.getComponent(auctioneerConfig.getPid()).enable();
+        clusterHelper.enableComponent(auctioneerDesc);
+        clusterHelper.waitForComponentToBecomeActive(auctioneerDesc);
         checkBidsFullCluster();
     }
 
@@ -74,12 +82,16 @@ public class BasicClusterTests
         setupCluster();
         checkBidsFullCluster();
 
+        ComponentDescriptionDTO concentratorDesc =
+                                                 clusterHelper.getComponentDescriptionDTOByPid(concentratorConfig.getPid());
+
         // disconnect Concentrator
-        clusterHelper.getComponent(concentratorConfig.getPid()).disable();
+        clusterHelper.disableComponent(concentratorDesc);
         checkBidsNoCluster();
 
         // Connect concentrator, bid should start again
-        clusterHelper.getComponent(concentratorConfig.getPid()).enable();
+        clusterHelper.enableComponent(concentratorDesc);
+        clusterHelper.waitForComponentToBecomeActive(concentratorConfig.getPid());
         checkBidsFullCluster();
     }
 

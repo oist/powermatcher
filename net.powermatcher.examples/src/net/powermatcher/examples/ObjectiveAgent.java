@@ -2,17 +2,19 @@ package net.powermatcher.examples;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 import net.powermatcher.api.AgentEndpoint;
 import net.powermatcher.api.data.Bid;
 import net.powermatcher.api.monitoring.AgentObserver;
@@ -42,21 +44,23 @@ import net.powermatcher.core.BaseAgentEndpoint;
  * @author FAN
  * @version 2.1
  */
-@Component(designateFactory = ObjectiveAgent.Config.class, immediate = true, provide = { AgentEndpoint.class,
-                                                                                         ObservableAgent.class })
+@Component(immediate = true,
+           service = { AgentEndpoint.class,
+                       ObservableAgent.class })
+@Designate(ocd = ObjectiveAgent.Config.class, factory = true)
 public class ObjectiveAgent
     extends BaseAgentEndpoint
     implements AgentObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectiveAgent.class);
 
-    @Meta.OCD
-    public static interface Config {
-        @Meta.AD(description = "AgentID of this agent", deflt = "objectiveagent")
-               String agentId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "AgentID of this agent")
+        String agentId() default "objectiveagent";
 
-        @Meta.AD(description = "AgentID of the Auctioneer", deflt = "auctioneer")
-               String auctioneerId();
+        @AttributeDefinition(description = "AgentID of the Auctioneer")
+        String auctioneerId() default "auctioneer";
     }
 
     /**
@@ -77,12 +81,11 @@ public class ObjectiveAgent
      *            the configuration properties
      */
     @Activate
-    public void activate(final Map<String, Object> properties) {
-        config = Configurable.createConfigurable(Config.class, properties);
+    public void activate(final Config config) {
         init(config.agentId(), config.auctioneerId());
-
         LOGGER.info("Objective agent activated");
 
+        this.config = config;
         for (ObservableAgent observableAgent : observableAgents) {
             // Retry now the component is activated
             addObservableAgent(observableAgent);
@@ -109,7 +112,7 @@ public class ObjectiveAgent
      * @param agent
      *            ObservableAgent that might be the Auctioneer
      */
-    @Reference(multiple = true, optional = true, dynamic = true)
+    @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
     public void addObservableAgent(ObservableAgent agent) {
         if (config == null) {
             // The component is not yet activated, we'll try again in the activate method

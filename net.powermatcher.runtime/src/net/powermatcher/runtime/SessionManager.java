@@ -9,11 +9,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.flexiblepower.context.FlexiblePowerContext;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
 import net.powermatcher.api.Agent;
 import net.powermatcher.api.AgentEndpoint;
 import net.powermatcher.api.MatcherEndpoint;
@@ -64,7 +66,7 @@ public class SessionManager {
      * @param matcherEndpoint
      *            the new {@link MatcherEndpoint}
      */
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
     public void addMatcherEndpoint(MatcherEndpoint matcherEndpoint) {
         addAgent(matcherEndpoint);
 
@@ -120,7 +122,7 @@ public class SessionManager {
      * @param agentEndpoint
      *            the new {@link AgentEndpoint}
      */
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
     public void addAgentEndpoint(AgentEndpoint agentEndpoint) {
         addAgent(agentEndpoint);
 

@@ -16,17 +16,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.powermatcher.core.concentrator.TransformingConcentrator;
-
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Meta;
-
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import net.powermatcher.core.concentrator.TransformingConcentrator;
 
 /**
  * The PeakShavingServlet makes it possible to remotely update the measurements of the {@link PeakShavingConcentrator}s
@@ -45,12 +48,15 @@ import com.google.gson.reflect.TypeToken;
  * @author FAN
  * @version 1.0
  */
-@Component(provide = Servlet.class, designate = PeakShavingConcentratorServlet.Config.class)
+@Component(service = Servlet.class)
+@Designate(ocd = PeakShavingConcentratorServlet.Config.class)
 public class PeakShavingConcentratorServlet
     extends HttpServlet {
 
+    @ObjectClassDefinition
     public interface Config {
-        @Meta.AD(deflt = "/peakshaving", description = "The alias under which this servlet can be reached")
+        @AttributeDefinition(defaultValue = "/peakshaving",
+                             description = "The alias under which this servlet can be reached")
         public String alias();
     }
 
@@ -62,7 +68,7 @@ public class PeakShavingConcentratorServlet
 
     private final Map<String, PeakShavingConcentrator> concentrators = new ConcurrentHashMap<String, PeakShavingConcentrator>();
 
-    @Reference(dynamic = true, multiple = true)
+    @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.AT_LEAST_ONE)
     public void addConcentrator(TransformingConcentrator concentrator, Map<String, Object> properties) {
         Object agentId = properties.get(KEY_AGENT_ID);
         if (agentId == null || concentrators.containsKey(agentId.toString())) {

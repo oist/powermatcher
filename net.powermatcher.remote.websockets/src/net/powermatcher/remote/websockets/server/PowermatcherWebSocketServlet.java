@@ -1,7 +1,5 @@
 package net.powermatcher.remote.websockets.server;
 
-import java.util.Map;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
@@ -11,11 +9,11 @@ import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.osgi.framework.BundleContext;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 /**
  * Servlet which activates the PowerMatcher WebSocket communication.
@@ -23,31 +21,29 @@ import aQute.bnd.annotation.metatype.Meta;
  * @author FAN
  * @version 2.1
  */
-@Component(designateFactory = PowermatcherWebSocketServlet.Config.class, provide = Servlet.class)
+@Component(service = Servlet.class)
+@Designate(ocd = PowermatcherWebSocketServlet.Config.class, factory = true)
 public class PowermatcherWebSocketServlet
     extends WebSocketServlet
     implements WebSocketCreator {
     private static final long serialVersionUID = -8809366066221881974L;
 
-    @Meta.OCD
-    public static interface Config {
-        @Meta.AD(deflt = "concentrator",
-                 description = "The agent identifier of the parent matcher to which "
-                               + "agent proxies should be connected ")
-        String desiredParentId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "The agent identifier of the parent matcher to which "
+                                           + "agent proxies should be connected ")
+        String desiredParentId() default "concentrator";
 
-        @Meta.AD(deflt = "/powermatcher/websocket",
-                 description = "The path of the URL on which this servlet can be reached")
-        String alias();
+        @AttributeDefinition(description = "The path of the URL on which this servlet can be reached")
+        String alias() default "/powermatcher/websocket";
     }
 
     private String desiredParentId;
     private BundleContext bundleContext;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final Config config) {
         this.bundleContext = bundleContext;
-        Config config = Configurable.createConfigurable(Config.class, properties);
         desiredParentId = config.desiredParentId();
     }
 

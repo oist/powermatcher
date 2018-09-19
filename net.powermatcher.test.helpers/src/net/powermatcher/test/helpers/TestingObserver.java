@@ -7,6 +7,16 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.powermatcher.api.data.Price;
 import net.powermatcher.api.monitoring.AgentObserver;
 import net.powermatcher.api.monitoring.ObservableAgent;
@@ -15,13 +25,6 @@ import net.powermatcher.api.monitoring.events.IncomingPriceUpdateEvent;
 import net.powermatcher.api.monitoring.events.OutgoingBidUpdateEvent;
 import net.powermatcher.api.monitoring.events.OutgoingPriceUpdateEvent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Meta;
-
 /**
  * {@link TestingObserver} is an example implementation of the {@link BaseObserver} interface. You can add
  * {@link ObservableAgent}s and it can receive {@link AgentEvent}s from them.
@@ -29,7 +32,8 @@ import aQute.bnd.annotation.metatype.Meta;
  * @author FAN
  * @version 2.1
  */
-@Component(immediate = true, designate = TestingObserver.Config.class)
+@Component(immediate = true)
+@Designate(ocd = TestingObserver.Config.class)
 public class TestingObserver
     implements AgentObserver {
 
@@ -41,11 +45,12 @@ public class TestingObserver
      * This interface describes the configuration of this {@link TestingObserver}. It defines the filter for the
      * {@link ObservableAgent}s that are needed.
      */
-    public static interface Config {
-        @Meta.AD(required = false,
-                 deflt = "",
-                 description = "The LDAP filter for the ObservableAgents that we want to monitor. "
-                               + "E.g. '(agentId=auctioneer)'")
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(required = false,
+                             defaultValue = "",
+                             description = "The LDAP filter for the ObservableAgents that we want to monitor. "
+                                           + "E.g. '(agentId=auctioneer)'")
         String observableAgent_filter();
     }
 
@@ -57,7 +62,7 @@ public class TestingObserver
      * @param observable
      *            The {@link ObservableAgent} that it should be registered on.
      */
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public void addObservableAgent(ObservableAgent observable) {
         observable.addObserver(this);
     }
