@@ -1,6 +1,5 @@
 bin/
 *.class
-.metadata/
 generated/
 .svn/
 cnf/cache/
@@ -13,4 +12,22 @@ RemoteSystemsTempFiles/.project
 */bin_test/*
 .recommenders/
 testdir/
+.com_puppetlabs_geppetto_pptp_target
+
+# Eclipse project file
+.settings/
+.classpath
+.project
+
+# Vim 
+tags
+*.swp
+
+# Keep the projects list
+.metadata/*
+!.metadata/.plugins/
+.metadata/.plugins/*
+!.metadata/.plugins/org.eclipse.core.resources/
+.metadata/.plugins/org.eclipse.core.resources/*
+!.metadata/.plugins/org.eclipse.core.resources/.plugins/
 .com_puppetlabs_geppetto_pptp_target
