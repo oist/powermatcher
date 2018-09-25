@@ -68,10 +68,13 @@ public class VisualisationPlugin
     @ObjectClassDefinition
     public @interface Config {
         @AttributeDefinition(required = true,
-                             defaultValue = "Auctioneer::net.powermatcher.core.auctioneer.Auctioneer, Concentrator::net.powermatcher.core.concentrator.Concentrator,"
-                                            + "DeviceAgent::net.powermatcher.examples.Freezer, DeviceAgent::net.powermatcher.examples.PVPanelAgent",
                              description = "A list of all the OSGi Menu items that have to be used. It's menu::submenu")
-        String[] menu();
+        String[] menu() default {
+            "Auctioneer::net.powermatcher.core.auctioneer.Auctioneer",
+            "Concentrator::net.powermatcher.core.concentrator.Concentrator",
+            "DeviceAgent::net.powermatcher.examples.Freezer",
+            "DeviceAgent::net.powermatcher.examples.PVPanelAgent"
+        };
     }
 
     /**

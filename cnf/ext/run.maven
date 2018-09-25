@@ -12,4 +12,6 @@ org.apache.felix:org.apache.felix.metatype:jar:1.2.0
 org.apache.felix:org.apache.felix.http.jetty:jar:4.0.4
 org.apache.felix:org.apache.felix.http.servlet-api:jar:1.1.2
 org.apache.felix:org.apache.felix.http.whiteboard:jar:4.0.0
+org.apache.felix:org.apache.felix.inventory:jar:1.0.6
+org.apache.felix:org.apache.felix.webconsole.plugins.ds:jar:2.0.8
 org.slf4j:osgi-over-slf4j:1.7.25
