@@ -54,9 +54,10 @@ public class PeakShavingConcentratorServlet
     extends HttpServlet {
 
     @ObjectClassDefinition
-    public @interface Config {
-        @AttributeDefinition(description = "The alias under which this servlet can be reached")
-        public String alias() default "/peakshaving";
+    public interface Config {
+        @AttributeDefinition(defaultValue = "/peakshaving",
+                             description = "The alias under which this servlet can be reached")
+        public String alias();
     }
 
     private static final String KEY_AGENT_ID = "agentId";

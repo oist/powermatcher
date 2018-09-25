@@ -48,9 +48,10 @@ public class TestingObserver
     @ObjectClassDefinition
     public @interface Config {
         @AttributeDefinition(required = false,
+                             defaultValue = "",
                              description = "The LDAP filter for the ObservableAgents that we want to monitor. "
                                            + "E.g. '(agentId=auctioneer)'")
-        String observableAgent_filter() default "";
+        String observableAgent_filter();
     }
 
     /**
